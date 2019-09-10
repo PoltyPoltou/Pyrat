@@ -18,6 +18,7 @@
             "program": "C:\\Users\\poltg\\Documents\\imt code\\Pyrat\\pyrat.py",
             "console": "integratedTerminal",
             "args": [
+                "",
                 "--rat",
                 "${file}"
             ],

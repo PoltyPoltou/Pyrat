@@ -27,12 +27,10 @@ def getDirection(direction, position):
 def coupleToIndex(matrix, couple):
     (a, b) = couple
     return matrix[a][b]
-
-
-def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
+def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
     queue = []
-    fatherDic = {(0, 0): (-1, -1)}
-    queue.append((0, 0))
+    fatherDic = {playerPos: (-1, -1)}
+    queue.append(playerPos)
     cheeseFound = False
     while queue != [] and not cheeseFound:
         vertice = queue.pop(0)
@@ -46,14 +44,19 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
                 break
     iterator = destination
     path.append(destination)
-    while fatherDic[iterator] != (0, 0):
+    while fatherDic[iterator] != playerPos:
         path.append(fatherDic[iterator])
         iterator = path[-1]
+
+def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
+    targetNextCheese(playerLocation,mazeMap,piecesOfCheese)
     return
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
-    objectif = path.pop()
+    if path==[]:
+        targetNextCheese(playerLocation,mazeMap,piecesOfCheese)
+    objectif=path.pop()
     return getDirection(objectif, playerLocation)
 
 cheese = [(10, 7), (3, 12), (17, 2), (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4), (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
@@ -78,7 +81,7 @@ maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): 
 1}, (19, 1): {(18, 1): 1, (19, 0): 1}, (19, 2): {(20, 2): 1, (18, 2): 1}, (19, 3): {(18, 3): 1}, (19, 4): {(19, 5): 6, (18, 4): 1}, (19, 5): {(19, 6): 1, (19, 4): 6}, (19, 6): {(19, 5): 1, (20, 6): 1}, (19, 7): {(18, 7): 1, (20, 7): 1}, (19, 8): {(20, 8): 1}, (19, 9): {(20, 9): 1, (18, 9): 1, (19, 10): 1}, (19, 10): {(19, 9): 1, (19, 11): 1, (20, 10): 1}, (19, 11): {(19, 10): 1, (18, 11): 1, (19, 12): 1}, (19, 12): {(20, 12): 1, (19, 13): 1, (19, 11): 1, (18, 12): 1}, (19, 13): {(19, 12): 1, (20, 13): 9}, (19, 14): {(18, 14): 1, (20, 14): 1}, (20, 0): {(20, 1): 1, (19, 0): 1}, (20, 1): {(20, 2): 1, (20, 0): 1}, (20, 
 2): {(19, 2): 1, (20, 1): 1, (20, 3): 1}, (20, 3): {(20, 4): 1, (20, 2): 1}, (20, 4): {(20, 3): 1}, (20, 5): {(20, 6): 1}, (20, 6): {(20, 5): 1, (19, 6): 1}, (20, 7): {(19, 7): 1}, (20, 8): {(20, 9): 1, (19, 8): 1}, (20, 9): {(19, 9): 1, (20, 8): 1}, (20, 10): {(20, 11): 1, (19, 10): 1}, (20, 11): {(20, 10): 1}, (20, 12): {(19, 12): 1}, (20, 13): {(20, 14): 1, (19, 13): 9}, (20, 14): {(20, 13): 1, (19, 14): 1}}
 
-preprocessing(maze, 0, 0, 0, 0, cheese, 0)
+preprocessing(maze, 0, 0, (0,0), 0, cheese, 0)
 print(path)
 while path != []:
     print(path.pop())

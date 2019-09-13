@@ -2,6 +2,7 @@
 # Please put your imports here
 from collections import deque
 from queue import PriorityQueue
+import heapq
 ###############################
 # Please put your global variables here
 
@@ -30,16 +31,16 @@ def coupleToIndex(matrix, couple):
 
 
 def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
-    prioQueue = PriorityQueue()
+    heap = []
     fatherDic = {playerPos: (-1, -1)}
-    prioQueue.put((0, playerPos))
+    heapq.heappush(heap, (0, playerPos))
     cheeseFound = False
-    while prioQueue != [] and not cheeseFound:
-        (weight, vertice) = prioQueue.get()
+    while heap != [] and not cheeseFound:
+        (weight, vertice) = heapq.heappop(heap)
         for elmt in mazeMap[vertice].keys():
             if elmt not in fatherDic.keys():
                 fatherDic.update({elmt: vertice})
-                prioQueue.put((weight + mazeMap[vertice][elmt], elmt))
+                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
             if elmt in piecesOfCheese:
                 cheeseFound = True
                 destination = elmt

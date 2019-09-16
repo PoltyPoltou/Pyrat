@@ -1,7 +1,7 @@
 
 list = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-cheese = [(10, 7), (3, 12), (17, 2), (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4), (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
-{(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): {(1, 2): 1}, (0, 3): {(0, 4): 1}, (0, 4): {(0, 3): 1, (1, 4): 1}, (0, 5): {(1, 5): 
+cheese = [(10, 7), (3, 12), (17, 2), (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4)]#, (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
+maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): {(1, 2): 1}, (0, 3): {(0, 4): 1}, (0, 4): {(0, 3): 1, (1, 4): 1}, (0, 5): {(1, 5): 
 1, (0, 6): 1}, (0, 6): {(0, 5): 1, (1, 6): 1}, (0, 7): {(1, 7): 1}, (0, 8): {(0, 9): 1, (1, 8): 1}, (0, 9): {(0, 8): 1}, (0, 10): {(0, 11): 1}, (0, 11): {(0, 10): 1, (0, 12): 1}, (0, 12): {(1, 12): 1, (0, 13): 1, (0, 11): 1}, (0, 13): {(0, 12): 1, (0, 14): 1}, (0, 14): {(0, 13): 1, (1, 14): 1}, (1, 0): {(2, 0): 1, (0, 0): 1}, (1, 1): {(1, 2): 1, (0, 1): 9}, (1, 2): {(0, 2): 1, (1, 1): 1, (1, 3): 1, (2, 2): 1}, (1, 3): {(1, 4): 1, (2, 3): 1, (1, 2): 1}, (1, 4): {(1, 5): 1, (1, 3): 1, (0, 4): 1}, (1, 5): {(0, 5): 1, (2, 5): 1, (1, 4): 1}, (1, 6): {(0, 6): 1}, (1, 7): {(2, 7): 1, (0, 7): 1}, (1, 8): {(1, 9): 1, (0, 8): 
 1}, (1, 9): {(1, 8): 1, (1, 10): 6}, (1, 10): {(1, 9): 6, (2, 10): 1}, (1, 11): {(2, 11): 1}, (1, 12): {(0, 12): 1, (2, 12): 1}, (1, 13): {(2, 13): 1, (1, 14): 1}, (1, 14): {(1, 13): 1, (0, 14): 1}, (2, 0): {(1, 0): 1}, (2, 1): {(3, 1): 1}, (2, 2): {(1, 2): 1}, (2, 3): {(1, 3): 1}, (2, 4): {(2, 5): 8}, (2, 5): 
 {(1, 5): 1, (2, 4): 8, (3, 5): 1}, (2, 6): {(3, 6): 1}, (2, 7): {(1, 7): 1, (3, 7): 1, (2, 8): 1}, (2, 8): {(2, 7): 1, (2, 9): 1}, (2, 9): {(2, 8): 1, (3, 9): 1}, (2, 10): {(1, 10): 1, (2, 11): 1}, (2, 11): {(2, 12): 1, (2, 10): 1, (1, 11): 1}, (2, 12): {(2, 11): 1, (1, 12): 1}, (2, 13): {(1, 13): 1, (2, 14): 4, (3, 13): 1}, (2, 14): {(2, 13): 4}, (3, 0): {(3, 1): 1}, (3, 1): {(2, 1): 1, (3, 0): 1, (3, 2): 1, (4, 1): 1}, (3, 2): {(3, 1): 1, (4, 2): 1, (3, 3): 1}, 
@@ -37,3 +37,83 @@ heapq.heappush(lst, (1, "duh"))
 while lst != []:
     print(heapq.heappop(lst))
     print("mh?")
+
+def generatePermutations(size):
+    if size == 1:
+        return [[0]]
+    else:
+        print(size)
+        setup = generatePermutations(size - 1)
+        lst = []
+        for permutation in setup:
+            for i in range(size):
+                temp = permutation.copy()
+                if i != size - 1:
+                    temp.append(temp[i])
+                    temp[i] = size - 1
+                else:
+                    temp.append(size-1)
+                lst.append(temp)
+        return lst
+# return the weight of the tour but in reverse (easier to use with list.pop)
+#acc =0 and perms = [[0]] by default for recursivity
+def generatePermutationsBIS(size, acc=0,perms=[[0]]):
+    if acc == size:
+        return perms
+    elif acc == 0:
+        return generatePermutationsBIS(size, acc + 1, [[0]])
+    else:
+        lst = []
+        for permutation in perms:
+            for i in range(acc+1):
+                temp = permutation.copy()
+                temp.append(-1)
+                temp[-1] = temp[i]
+                temp[i] = acc
+                lst.append(temp)
+        return generatePermutationsBIS(size,acc+1,lst)
+def targetPoint(playerPos, mazeMap, target):
+    heap = []
+    path = []
+    fatherDic = {playerPos: (-1, -1)}
+    heapq.heappush(heap, (0, playerPos))
+    cheeseFound = False
+    while heap != [] and not cheeseFound:
+        (weight, vertice) = heapq.heappop(heap)
+        for elmt in mazeMap[vertice].keys():
+            if elmt not in fatherDic.keys():
+                fatherDic.update({elmt: vertice})
+                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
+            if elmt == target:
+                cheeseFound = True
+                destination = elmt
+                break
+    iterator = destination
+    path.append(destination)
+    weight = 0
+    while fatherDic[iterator] != playerPos:
+        path.append(fatherDic[iterator])
+        weight += mazeMap[iterator][path[-1]]
+        iterator = path[-1]
+    weight += mazeMap[iterator][playerPos]
+    return (weight, path)
+
+
+def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
+    bestLength = mazeHeight * mazeWidth * 3
+    print(bestLength)
+    bestPath = []
+    print("time allowed %s", timeAllowed)
+    for permutation in generatePermutationsBIS(len(piecesOfCheese)):
+        (length, path) = targetPoint(playerLocation,
+                                     mazeMap, piecesOfCheese[permutation[0]])
+        for i in range(1, len(permutation)):
+            (partialLength, partialPath) = targetPoint(
+                piecesOfCheese[permutation[i - 1]], mazeMap, piecesOfCheese[permutation[i]])
+            length += partialLength
+            path = partialPath + path
+        if bestLength > length:
+            bestLength = length
+            bestPath = path
+    return path
+print(preprocessing(maze,50,50,(0,0),0,cheese,1000))

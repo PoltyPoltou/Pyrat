@@ -18,6 +18,7 @@ MOVE_UP = 'U'
 ###############################
 # Please put your global variables here
 visitedArray = []
+lastPlaceVisited = (0, 0)
 directions = {(0, 1): MOVE_UP, (0, -1): MOVE_DOWN,
               (1, 0): MOVE_RIGHT, (-1, 0): MOVE_LEFT}
 
@@ -40,31 +41,40 @@ directions = {(0, 1): MOVE_UP, (0, -1): MOVE_DOWN,
 
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
-    visitedArray = [[False] * mazeHeight] * mazeWidth
+    pass
+    ###############################
+    # Turn function
+    # The turn function is called each time the game is waiting
+    # for the player to make a decision (a move).
+    ###############################
+    # Arguments are:
+    # mazeMap : dict(pair(int, int), dict(pair(int, int), int))
+    # mazeWidth : int
+    # mazeHeight : int
+    # playerLocation : pair(int, int)
+    # opponentLocation : pair(int, int)
+    # playerScore : float
+    # opponentScore : float
+    # piecesOfCheese : list(pair(int, int))
+    # timeAllowed : float
+    ###############################
+    # This function is expected to return a move
 
 
-###############################
-# Turn function
-# The turn function is called each time the game is waiting
-# for the player to make a decision (a move).
-###############################
-# Arguments are:
-# mazeMap : dict(pair(int, int), dict(pair(int, int), int))
-# mazeWidth : int
-# mazeHeight : int
-# playerLocation : pair(int, int)
-# opponentLocation : pair(int, int)
-# playerScore : float
-# opponentScore : float
-# piecesOfCheese : list(pair(int, int))
-# timeAllowed : float
-###############################
-# This function is expected to return a move
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     choices = []
+    # for each neighboor available check if it was visited if not add it to the list choices
     for dir in mazeMap[playerLocation].keys():
-        choices.append(getDirection(dir, playerLocation))
+        if dir not in visitedArray:
+            choices.append(getDirection(dir, playerLocation))
+    # if choices is empty then we just choose a possible move randomly
+    if choices == []:
+        for place in mazeMap[playerLocation].keys():
+            choices.append(getDirection(place, playerLocation))
+    visitedArray.append(playerLocation)
     return random.choice(choices)
+
+# allows to get the move needed to go from position to direction
 
 
 def getDirection(direction, position):

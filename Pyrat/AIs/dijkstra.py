@@ -30,35 +30,49 @@ def coupleToIndex(matrix, couple):
     return matrix[a][b]
 
 
-def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
+def targetNextCheese(playerPos, mazeMap, piecesOfCheese, mazeHeight, mazeWidth):
     heap = []
     fatherDic = {playerPos: (-1, -1)}
     heapq.heappush(heap, (0, playerPos))
+    length = [[float('inf') for i in range(mazeHeight)]
+              for i in range(mazeWidth)]
+    length[0][0] = 0
     cheeseFound = False
     while heap != [] and not cheeseFound:
         (weight, vertice) = heapq.heappop(heap)
+        if vertice in piecesOfCheese:
+            cheeseFound = True
+            destination = vertice
         for elmt in mazeMap[vertice].keys():
-            if elmt not in fatherDic.keys():
+            x, y = elmt
+            if coupleToIndex(length, elmt) > weight + mazeMap[vertice][elmt]:
+                if elmt in heap:
+                    heap[heap.index((coupleToIndex(length, elmt), elmt))] = (
+                        weight + mazeMap[vertice][elmt], elmt)
+                    length[x][y] = weight + mazeMap[vertice][elmt]
+                else:
+                    length[x][y] = weight + mazeMap[vertice][elmt]
+                    heapq.heappush(heap, (length[x][y], elmt))
+                fatherDic.pop(elmt, True)
                 fatherDic.update({elmt: vertice})
-                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
-            if elmt in piecesOfCheese:
-                cheeseFound = True
-                destination = elmt
-                break
+
     iterator = destination
     path.append(destination)
     while fatherDic[iterator] != playerPos:
         path.append(fatherDic[iterator])
         iterator = path[-1]
+    return path
 
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
-    targetNextCheese(playerLocation, mazeMap, piecesOfCheese)
+    targetNextCheese(playerLocation, mazeMap,
+                     piecesOfCheese, mazeHeight, mazeWidth)
     return
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     if path == []:
-        targetNextCheese(playerLocation, mazeMap, piecesOfCheese)
+        targetNextCheese(playerLocation, mazeMap,
+                         piecesOfCheese, mazeHeight, mazeWidth)
     objectif = path.pop()
     return getDirection(objectif, playerLocation)

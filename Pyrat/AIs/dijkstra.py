@@ -74,5 +74,5 @@ def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playe
     if path == []:
         targetNextCheese(playerLocation, mazeMap,
                          piecesOfCheese, mazeHeight, mazeWidth)
-    objectif = path.pop()
-    return getDirection(objectif, playerLocation)
+    goal = path.pop()
+    return getDirection(goal, playerLocation)

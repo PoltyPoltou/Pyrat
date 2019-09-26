@@ -19,7 +19,9 @@
             "console": "integratedTerminal",
             "args": [
                 "--rat",
-                "${file}"
+                "${file}",
+                "--python",
+                "C:\\Users\\poltg\\Documents\\imt code\\Pyrat\\AIs\\dijkstra.py"
             ]
         }
     ]

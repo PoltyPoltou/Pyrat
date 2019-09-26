@@ -74,7 +74,7 @@ def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
     weight += mazeMap[playerPos][iterator]
     return (weight, path)
 
-# return the weigth of the greediest path
+# return the weight of the greediest path
 
 
 def greedIsFeed(beginLocation, mazeMap, piecesOfCheese):
@@ -125,9 +125,9 @@ def nextPerm(lst, size):
         while [] == [x for x in range(lst[-i] + 1, size) if x not in newLst[:len(lst) - i]]:
             i+=1
         newLst[-i] = [x for x in range(lst[-i] + 1, size) if x not in newLst[:len(lst) - i]][0]
-        numbersAvalaible = [x for x in range(size) if x not in newLst][:i-1]
+        numbersAvailable = [x for x in range(size) if x not in newLst][:i-1]
         for j in range(len(lst) - 1, len(lst) - i , -1):
-            newLst[j] = numbersAvalaible.pop()
+            newLst[j] = numbersAvailable.pop()
         result = newLst
     else:
         k = -1
@@ -205,8 +205,7 @@ def bAndB(mazeMap, piecesOfCheese, playerLocation):
 
 path = []
 
-
-def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
+def computeCheesePath(mazeMap, piecesOfCheese):
     cheesesPath.extend([[] for i in range(len(piecesOfCheese))])
     for i in range(len(piecesOfCheese)):
         for j in range(i,len(piecesOfCheese)):
@@ -217,7 +216,10 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
                 p.reverse()
                 cheesesPath[j].append((w,p))
             else:
-                cheesesPath[i].append((0,[]))
+                cheesesPath[i].append((0, []))
+
+def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
+    computeCheesePath(mazeMap, piecesOfCheese)
     order = bAndB(mazeMap, piecesOfCheese, playerLocation)
     path.extend(order)
 

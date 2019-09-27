@@ -37,12 +37,8 @@ def targetNextCheese(playerPos, mazeMap, piecesOfCheese, mazeHeight, mazeWidth):
     length = [[float('inf') for i in range(mazeHeight)]
               for i in range(mazeWidth)]
     length[0][0] = 0
-    cheeseFound = False
-    while heap != [] and not cheeseFound:
+    while heap != []:
         (weight, vertice) = heapq.heappop(heap)
-        if vertice in piecesOfCheese:
-            cheeseFound = True
-            destination = vertice
         for elmt in mazeMap[vertice].keys():
             x, y = elmt
             if coupleToIndex(length, elmt) > weight + mazeMap[vertice][elmt]:
@@ -55,7 +51,12 @@ def targetNextCheese(playerPos, mazeMap, piecesOfCheese, mazeHeight, mazeWidth):
                     heapq.heappush(heap, (length[x][y], elmt))
                 fatherDic.pop(elmt, True)
                 fatherDic.update({elmt: vertice})
-
+    destination = piecesOfCheese[0]
+    distance = length[destination[0]][destination[1]]
+    for (x, y) in piecesOfCheese:
+        if distance > length[x][y]:
+            distance = length[x][y]
+            destination = (x, y)
     iterator = destination
     path.append(destination)
     while fatherDic[iterator] != playerPos:

@@ -28,6 +28,8 @@ def coupleToIndex(matrix, couple):
     (a, b) = couple
     return matrix[a][b]
 
+# dfs algorithm
+
 
 def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
     queue = []
@@ -59,6 +61,5 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     if path == []:
         targetNextCheese(playerLocation, mazeMap, piecesOfCheese)
-    objectif = path.pop()
-    return getDirection(objectif, playerLocation)
-    
+    goal = path.pop()
+    return getDirection(goal, playerLocation)

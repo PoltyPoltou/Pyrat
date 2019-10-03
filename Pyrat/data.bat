@@ -3,6 +3,6 @@ cd C:\Users\poltg\Documents\imt code\Pyrat
 C:
 set /A j = 1
 :loop
-set /A j = %j% +2 
-start "%j%" cmd /K "python pyrat.py --rat AIs/dfsai.py -x %j% -y %j% -p 1 -md 0 -d 0 --nodrawing"
-if %j% == 25 (pause) else (goto :loop)
+set /A j = %j% + 1
+start "%j%" cmd /K "python pyrat.py --rat AIs/bruteforce.py -p %j% --nodrawing --preparation_time 60000"
+if %j% == 10 (pause) else (goto :loop)

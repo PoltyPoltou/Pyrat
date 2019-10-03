@@ -212,9 +212,9 @@ def computeCheesePath(mazeMap, piecesOfCheese):
                 cheesesPath[i].append(targetPoint(piecesOfCheese[i], mazeMap, piecesOfCheese[j]))
                 w, p = cheesesPath[i][-1]
                 p = p.copy()
-                p.pop()
-                p.reverse()
+                p.pop(0)
                 p.append(piecesOfCheese[i])
+                p.reverse()
                 cheesesPath[j].append((w,p))
             else:
                 cheesesPath[i].append((0, []))

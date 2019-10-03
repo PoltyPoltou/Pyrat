@@ -69,6 +69,8 @@ def targetNextCheese(playerPos: tuple, mazeMap: dict, piecesOfCheese: list, maze
                 # adds or update the father's elmt, which is vertice
                 fatherDic.pop(elmt, True)
                 fatherDic.update({elmt: vertice})
+    # this part is to transform the fatherDict into a path
+    # we also check which cheese is the closest one and is stored in destination
     destination = piecesOfCheese[0]
     distance = length[destination[0]][destination[1]]
     for (x, y) in piecesOfCheese:
@@ -90,6 +92,7 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
+    # if path is empty it means we can look for another cheese and we go on
     if path == []:
         targetNextCheese(playerLocation, mazeMap,
                          piecesOfCheese, mazeHeight, mazeWidth)

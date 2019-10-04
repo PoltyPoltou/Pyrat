@@ -1,89 +1,22 @@
 ###############################
 # Please put your imports here
-import heapq
+import AIs.dijkstra as dj
+#import dijkstra as dj
 ###############################
 # Please put your global variables here
 
-MOVE_DOWN = 'D'
-MOVE_LEFT = 'L'
-MOVE_RIGHT = 'R'
-MOVE_UP = 'U'
-directions = {(0, 1): MOVE_UP, (0, -1): MOVE_DOWN,
-              (1, 0): MOVE_RIGHT, (-1, 0): MOVE_LEFT}
 cheesesPath = []
-
-def getDirection(direction, position):
-    (fstA, sndA) = direction
-    (fstB, sndB) = position
-    fst = fstA - fstB
-    snd = sndA-sndB
-    return directions[(fst, snd)]
-
-
-def targetPoint(playerPos, mazeMap, target):
-    heap = []
-    path = []
-    fatherDic = {playerPos: (-1, -1)}
-    heapq.heappush(heap, (0, playerPos))
-    cheeseFound = False
-    while heap != [] and not cheeseFound:
-        (weight, vertice) = heapq.heappop(heap)
-        for elmt in mazeMap[vertice].keys():
-            if elmt not in fatherDic.keys():
-                fatherDic.update({elmt: vertice})
-                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
-            if elmt == target:
-                cheeseFound = True
-                destination = elmt
-                break
-    iterator = destination
-    path.append(destination)
-    weight = 0
-    while fatherDic[iterator] != playerPos:
-        path.append(fatherDic[iterator])
-        weight += mazeMap[iterator][path[-1]]
-        iterator = path[-1]
-    weight += mazeMap[iterator][playerPos]
-    return (weight, path)
-
-# path is inverse and must be used as a stack to be in order
-
-
-def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
-    heap = []
-    fatherDic = {playerPos: (-1, -1)}
-    heapq.heappush(heap, (0, playerPos))
-    cheeseFound = False
-    while heap != [] and not cheeseFound:
-        (weight, vertice) = heapq.heappop(heap)
-        for elmt in mazeMap[vertice].keys():
-            if elmt not in fatherDic.keys():
-                fatherDic.update({elmt: vertice})
-                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
-            if elmt in piecesOfCheese:
-                cheeseFound = True
-                destination = elmt
-                break
-    iterator = destination
-    path = []
-    path.append(destination)
-    while fatherDic[iterator] != playerPos:
-        path.append(fatherDic[iterator])
-        weight += mazeMap[fatherDic[iterator]][iterator]
-        iterator = path[-1]
-    weight += mazeMap[playerPos][iterator]
-    return (weight, path)
 
 # return the weight of the greediest path
 
 
-def greedIsFeed(beginLocation, mazeMap, piecesOfCheese):
+def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
     weight = 0
     path = []
     cheesesRemaining = piecesOfCheese.copy()
     playerPos = beginLocation
     while cheesesRemaining != []:
-        (w,p) = targetNextCheese(playerPos, mazeMap, cheesesRemaining)
+        (w,p) = dj.targetNextCheese(playerPos, mazeMap, cheesesRemaining, mazeWidth, mazeHeight)
         cheesesRemaining.remove(p[0])
         weight += w
         playerPos = p[0]
@@ -94,9 +27,8 @@ def greedIsFeed(beginLocation, mazeMap, piecesOfCheese):
 # for now it is estimated one move for each cheese not picked up plus the actual weight
 
 
-def lowerBound(constructingSolution, mazeMap, playerPos, piecesOfCheese):
-    weight = targetPoint(playerPos, mazeMap,
-                         piecesOfCheese[constructingSolution[0]])[0]
+def lowerBound(constructingSolution, mazeMap, playerPos, piecesOfCheese,mazeWidth, mazeHeight):
+    weight = cheesesPath[-1][constructingSolution[0]][0]
     for i in range(len(constructingSolution) - 1):
         weight += cheesesPath[constructingSolution[i]][constructingSolution[i + 1]][0]
     lastPos = piecesOfCheese[constructingSolution[-1]]
@@ -146,17 +78,15 @@ def nextPerm(lst, size):
         result = newLst[:k+1] + temp
     return result
 
-def evaluatePath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese):
-    weight, p = targetPoint(
-        beginLocation, mazeMap, piecesOfCheese[cheesesPerm[0]])
+def evaluatePath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
+    weight, p = cheesesPath[-1][cheesesPerm[0]]
     for i in range(len(cheesesPerm)-1):
         weight += cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][0]
     return weight
 
 
-def getPath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese):
-    p = targetPoint(
-        beginLocation, mazeMap, piecesOfCheese[cheesesPerm[0]])[1]
+def getPath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
+    p = cheesesPath[-1][cheesesPerm[0]][1]
     for i in range(len(cheesesPerm)-1):
         p = cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][1]+p
     return p
@@ -168,14 +98,12 @@ def lastPerm(lst, size):
     return [] == [x for x in range(lst[-1]+1,size) if x not in lst]
 
 
-def bAndB(mazeMap, piecesOfCheese, playerLocation):
-    #to add is the path to every cheese to any other one
+def backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight):
     n = len(piecesOfCheese)
-    bestScore,path = greedIsFeed(playerLocation,mazeMap,piecesOfCheese)
+    bestScore,path = greedIsFeed(playerLocation,mazeMap,piecesOfCheese, mazeWidth, mazeHeight)
     lst = [0]
     while lst != [x for x in range(n - 1, -1, -1)]:
-
-        if lowerBound(lst, mazeMap, playerLocation, piecesOfCheese) > bestScore:
+        if lowerBound(lst, mazeMap, playerLocation, piecesOfCheese,mazeWidth, mazeHeight) > bestScore:
             while lastPerm(lst, n):
                 lst.pop()
             if lst == []:
@@ -183,17 +111,17 @@ def bAndB(mazeMap, piecesOfCheese, playerLocation):
             else:
                 lst = nextPerm(lst, n)
                 if len(lst) == n:
-                    score = evaluatePath(lst,playerLocation,mazeMap,piecesOfCheese)
+                    score = evaluatePath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
                     if score < bestScore:
                         bestScore = score
-                        path = getPath(lst)
+                        path = getPath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
         elif len(lst) != n:
             lst.append([x for x in range(n) if x not in lst][0])
         else:
-            score = evaluatePath(lst,playerLocation,mazeMap,piecesOfCheese)
+            score = evaluatePath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
             if score < bestScore:
                 bestScore = score
-                path = getPath(lst,playerLocation,mazeMap,piecesOfCheese)
+                path = getPath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
             while lastPerm(lst, n):
                 lst.pop()
             if lst == []:
@@ -202,14 +130,14 @@ def bAndB(mazeMap, piecesOfCheese, playerLocation):
                 lst = nextPerm(lst, n)
     return path
 
-path = []
+globalPath = []
 
-def computeCheesePath(mazeMap, piecesOfCheese):
-    cheesesPath.extend([[] for i in range(len(piecesOfCheese))])
+def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLocation):
+    cheesesPath.extend([[] for i in range(len(piecesOfCheese)+1)])
     for i in range(len(piecesOfCheese)):
         for j in range(i,len(piecesOfCheese)):
             if i !=j:
-                cheesesPath[i].append(targetPoint(piecesOfCheese[i], mazeMap, piecesOfCheese[j]))
+                cheesesPath[i].append(dj.targetPoint(piecesOfCheese[i], mazeMap, piecesOfCheese[j], mazeWidth, mazeHeight))
                 w, p = cheesesPath[i][-1]
                 p = p.copy()
                 p.pop(0)
@@ -218,17 +146,19 @@ def computeCheesePath(mazeMap, piecesOfCheese):
                 cheesesPath[j].append((w,p))
             else:
                 cheesesPath[i].append((0, []))
+        cheesesPath[-1].append(dj.targetPoint(playerLocation, mazeMap, piecesOfCheese[i], mazeWidth, mazeHeight))
+    cheesesPath[-1].append((0,[]))
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
-    computeCheesePath(mazeMap, piecesOfCheese)
-    order = bAndB(mazeMap, piecesOfCheese, playerLocation)
-    path.extend(order)
-    print("path finished " + str(path))
+    computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLocation)
+    order = backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight)
+    print(order)
+    globalPath.extend(order)
     return 
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
-    return getDirection(path.pop(), playerLocation)
+    return dj.getDirection(globalPath.pop(), playerLocation)
 cheese = [(10, 7), (3, 12), (17, 2)]#, (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4), (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
 maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): {(1, 2): 1}, (0, 3): {(0, 4): 1}, (0, 4): {(0, 3): 1, (1, 4): 1}, (0, 5): {(1, 5): 
 1, (0, 6): 1}, (0, 6): {(0, 5): 1, (1, 6): 1}, (0, 7): {(1, 7): 1}, (0, 8): {(0, 9): 1, (1, 8): 1}, (0, 9): {(0, 8): 1}, (0, 10): {(0, 11): 1}, (0, 11): {(0, 10): 1, (0, 12): 1}, (0, 12): {(1, 12): 1, (0, 13): 1, (0, 11): 1}, (0, 13): {(0, 12): 1, (0, 14): 1}, (0, 14): {(0, 13): 1, (1, 14): 1}, (1, 0): {(2, 0): 1, (0, 0): 1}, (1, 1): {(1, 2): 1, (0, 1): 9}, (1, 2): {(0, 2): 1, (1, 1): 1, (1, 3): 1, (2, 2): 1}, (1, 3): {(1, 4): 1, (2, 3): 1, (1, 2): 1}, (1, 4): {(1, 5): 1, (1, 3): 1, (0, 4): 1}, (1, 5): {(0, 5): 1, (2, 5): 1, (1, 4): 1}, (1, 6): {(0, 6): 1}, (1, 7): {(2, 7): 1, (0, 7): 1}, (1, 8): {(1, 9): 1, (0, 8): 
@@ -249,3 +179,4 @@ maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): 
 1}, (18, 6): {(18, 7): 1, (18, 5): 1}, (18, 7): {(19, 7): 1, (17, 7): 1, (18, 6): 1}, (18, 8): {(17, 8): 1}, (18, 9): {(19, 9): 1, (18, 10): 8, (17, 9): 1}, (18, 10): {(18, 9): 8}, (18, 11): {(19, 11): 1}, (18, 12): {(19, 12): 1}, (18, 13): {(17, 13): 1}, (18, 14): {(19, 14): 1}, (19, 0): {(19, 1): 1, (20, 0): 
 1}, (19, 1): {(18, 1): 1, (19, 0): 1}, (19, 2): {(20, 2): 1, (18, 2): 1}, (19, 3): {(18, 3): 1}, (19, 4): {(19, 5): 6, (18, 4): 1}, (19, 5): {(19, 6): 1, (19, 4): 6}, (19, 6): {(19, 5): 1, (20, 6): 1}, (19, 7): {(18, 7): 1, (20, 7): 1}, (19, 8): {(20, 8): 1}, (19, 9): {(20, 9): 1, (18, 9): 1, (19, 10): 1}, (19, 10): {(19, 9): 1, (19, 11): 1, (20, 10): 1}, (19, 11): {(19, 10): 1, (18, 11): 1, (19, 12): 1}, (19, 12): {(20, 12): 1, (19, 13): 1, (19, 11): 1, (18, 12): 1}, (19, 13): {(19, 12): 1, (20, 13): 9}, (19, 14): {(18, 14): 1, (20, 14): 1}, (20, 0): {(20, 1): 1, (19, 0): 1}, (20, 1): {(20, 2): 1, (20, 0): 1}, (20, 
 2): {(19, 2): 1, (20, 1): 1, (20, 3): 1}, (20, 3): {(20, 4): 1, (20, 2): 1}, (20, 4): {(20, 3): 1}, (20, 5): {(20, 6): 1}, (20, 6): {(20, 5): 1, (19, 6): 1}, (20, 7): {(19, 7): 1}, (20, 8): {(20, 9): 1, (19, 8): 1}, (20, 9): {(19, 9): 1, (20, 8): 1}, (20, 10): {(20, 11): 1, (19, 10): 1}, (20, 11): {(20, 10): 1}, (20, 12): {(19, 12): 1}, (20, 13): {(20, 14): 1, (19, 13): 9}, (20, 14): {(20, 13): 1, (19, 14): 1}}
+#preprocessing(maze,21,15,(0,0),0,cheese,0)

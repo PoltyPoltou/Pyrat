@@ -5,12 +5,6 @@ import AIs.dijkstra as dj
 ###############################
 # Please put your global variables here
 
-MOVE_DOWN = 'D'
-MOVE_LEFT = 'L'
-MOVE_RIGHT = 'R'
-MOVE_UP = 'U'
-directions = {(0, 1): MOVE_UP, (0, -1): MOVE_DOWN,
-              (1, 0): MOVE_RIGHT, (-1, 0): MOVE_LEFT}
 cheesesPath = []
 
 # return the weight of the greediest path
@@ -34,8 +28,7 @@ def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
 
 
 def lowerBound(constructingSolution, mazeMap, playerPos, piecesOfCheese,mazeWidth, mazeHeight):
-    weight = dj.targetPoint(playerPos, mazeMap,
-                         piecesOfCheese[constructingSolution[0]], mazeWidth, mazeHeight)[0]
+    weight = cheesesPath[-1][constructingSolution[0]][0]
     for i in range(len(constructingSolution) - 1):
         weight += cheesesPath[constructingSolution[i]][constructingSolution[i + 1]][0]
     lastPos = piecesOfCheese[constructingSolution[-1]]
@@ -105,13 +98,11 @@ def lastPerm(lst, size):
     return [] == [x for x in range(lst[-1]+1,size) if x not in lst]
 
 
-def bAndB(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight):
-    #to add is the path to every cheese to any other one
+def backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight):
     n = len(piecesOfCheese)
     bestScore,path = greedIsFeed(playerLocation,mazeMap,piecesOfCheese, mazeWidth, mazeHeight)
     lst = [0]
     while lst != [x for x in range(n - 1, -1, -1)]:
-
         if lowerBound(lst, mazeMap, playerLocation, piecesOfCheese,mazeWidth, mazeHeight) > bestScore:
             while lastPerm(lst, n):
                 lst.pop()
@@ -160,7 +151,7 @@ def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLoca
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
     computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLocation)
-    order = bAndB(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight)
+    order = backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight)
     print(order)
     globalPath.extend(order)
     return 

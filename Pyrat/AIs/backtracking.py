@@ -1,6 +1,7 @@
 ###############################
 # Please put your imports here
 import AIs.dijkstra as dj
+import pdb
 #import dijkstra as dj
 ###############################
 # Please put your global variables here
@@ -10,17 +11,30 @@ cheesesPath = []
 # return the weight of the greediest path
 
 
-def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
+def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight, availableCheeses = []):
+    if availableCheeses == []:
+        availableCheeses = [*range(len(piecesOfCheese))]
+        playerPos = -1
+    else:
+        playerPos = piecesOfCheese.index(beginLocation)
     weight = 0
     path = []
-    cheesesRemaining = piecesOfCheese.copy()
-    playerPos = beginLocation
+    cheesesRemaining = availableCheeses.copy()
     while cheesesRemaining != []:
-        (w,p) = dj.targetNextCheese(playerPos, mazeMap, cheesesRemaining, mazeWidth, mazeHeight)
-        cheesesRemaining.remove(p[0])
+        index = 1
+        bestIndex = 0
+        
+        bestWeight = cheesesPath[playerPos][cheesesRemaining[0]][0]
+        while index < len(cheesesRemaining):
+            if cheesesPath[playerPos][cheesesRemaining[index]][0] < bestWeight:
+                bestIndex = index
+                bestWeight = cheesesPath[playerPos][cheesesRemaining[index]][0]
+            index += 1
+        w, p = cheesesPath[playerPos][cheesesRemaining[bestIndex]]
+        playerPos = cheesesRemaining.pop(bestIndex)
         weight += w
-        playerPos = p[0]
         path = p + path
+    
     return (weight, path)
 
 # estimate the lower bound of the total weight of current solution (in progress)
@@ -86,9 +100,10 @@ def evaluatePath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth,
 
 
 def getPath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
-    p = cheesesPath[-1][cheesesPerm[0]][1]
+    p = cheesesPath[-1][cheesesPerm[0]][1].copy()
     for i in range(len(cheesesPerm)-1):
-        p = cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][1]+p
+        p = cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][1] + p
+    print(p)
     return p
 # solutions are just the order of the cheeses taken (in respect to the list piecesOfCheese)
 
@@ -136,7 +151,7 @@ def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLoca
     cheesesPath.extend([[] for i in range(len(piecesOfCheese)+1)])
     for i in range(len(piecesOfCheese)):
         for j in range(i,len(piecesOfCheese)):
-            if i !=j:
+            if i != j:
                 cheesesPath[i].append(dj.targetPoint(piecesOfCheese[i], mazeMap, piecesOfCheese[j], mazeWidth, mazeHeight))
                 w, p = cheesesPath[i][-1]
                 p = p.copy()
@@ -147,6 +162,12 @@ def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLoca
             else:
                 cheesesPath[i].append((0, []))
         cheesesPath[-1].append(dj.targetPoint(playerLocation, mazeMap, piecesOfCheese[i], mazeWidth, mazeHeight))
+        w, p = cheesesPath[-1][-1]
+        p = p.copy()
+        p.pop(0)
+        p.append(playerLocation)
+        p.reverse()
+        cheesesPath[i].append((w,p))
     cheesesPath[-1].append((0,[]))
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
@@ -179,4 +200,3 @@ maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): 
 1}, (18, 6): {(18, 7): 1, (18, 5): 1}, (18, 7): {(19, 7): 1, (17, 7): 1, (18, 6): 1}, (18, 8): {(17, 8): 1}, (18, 9): {(19, 9): 1, (18, 10): 8, (17, 9): 1}, (18, 10): {(18, 9): 8}, (18, 11): {(19, 11): 1}, (18, 12): {(19, 12): 1}, (18, 13): {(17, 13): 1}, (18, 14): {(19, 14): 1}, (19, 0): {(19, 1): 1, (20, 0): 
 1}, (19, 1): {(18, 1): 1, (19, 0): 1}, (19, 2): {(20, 2): 1, (18, 2): 1}, (19, 3): {(18, 3): 1}, (19, 4): {(19, 5): 6, (18, 4): 1}, (19, 5): {(19, 6): 1, (19, 4): 6}, (19, 6): {(19, 5): 1, (20, 6): 1}, (19, 7): {(18, 7): 1, (20, 7): 1}, (19, 8): {(20, 8): 1}, (19, 9): {(20, 9): 1, (18, 9): 1, (19, 10): 1}, (19, 10): {(19, 9): 1, (19, 11): 1, (20, 10): 1}, (19, 11): {(19, 10): 1, (18, 11): 1, (19, 12): 1}, (19, 12): {(20, 12): 1, (19, 13): 1, (19, 11): 1, (18, 12): 1}, (19, 13): {(19, 12): 1, (20, 13): 9}, (19, 14): {(18, 14): 1, (20, 14): 1}, (20, 0): {(20, 1): 1, (19, 0): 1}, (20, 1): {(20, 2): 1, (20, 0): 1}, (20, 
 2): {(19, 2): 1, (20, 1): 1, (20, 3): 1}, (20, 3): {(20, 4): 1, (20, 2): 1}, (20, 4): {(20, 3): 1}, (20, 5): {(20, 6): 1}, (20, 6): {(20, 5): 1, (19, 6): 1}, (20, 7): {(19, 7): 1}, (20, 8): {(20, 9): 1, (19, 8): 1}, (20, 9): {(19, 9): 1, (20, 8): 1}, (20, 10): {(20, 11): 1, (19, 10): 1}, (20, 11): {(20, 10): 1}, (20, 12): {(19, 12): 1}, (20, 13): {(20, 14): 1, (19, 13): 9}, (20, 14): {(20, 13): 1, (19, 14): 1}}
-#preprocessing(maze,21,15,(0,0),0,cheese,0)

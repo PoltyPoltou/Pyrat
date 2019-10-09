@@ -45,7 +45,8 @@ def targetPoint(playerPos, mazeMap, target, mazeWidth, mazeHeight):
     heapq.heappush(heap, (0, playerPos))
     length = [[float('inf') for i in range(mazeHeight)]
               for i in range(mazeWidth)]
-    length[0][0] = 0
+    x, y = playerPos
+    length[x][y] = 0
     # loop while we do not have explored every node
     while heap != []:
         (weight, vertice) = heapq.heappop(heap)
@@ -54,8 +55,9 @@ def targetPoint(playerPos, mazeMap, target, mazeWidth, mazeHeight):
             if coupleToIndex(length, elmt) > weight + mazeMap[vertice][elmt]:
                 # affects the new weight if it is better than the previous one
                 if elmt in heap:
-                    heap[heap.index((coupleToIndex(length, elmt), elmt))] = (
-                        weight + mazeMap[vertice][elmt], elmt)
+                    heap.pop(heap.index((coupleToIndex(length, elmt), elmt)))
+                    heapq.heappush(
+                        heap, (weight + mazeMap[vertice][elmt], elmt))
                     length[x][y] = weight + mazeMap[vertice][elmt]
                 else:
                     length[x][y] = weight + mazeMap[vertice][elmt]
@@ -72,7 +74,7 @@ def targetPoint(playerPos, mazeMap, target, mazeWidth, mazeHeight):
         path.append(fatherDic[iterator])
         weight += mazeMap[iterator][fatherDic[iterator]]
         iterator = path[-1]
-    return (weight, path)
+    return (weight + mazeMap[iterator][playerPos], path)
 
 
 def targetNextCheese(playerPos: tuple, mazeMap: dict, piecesOfCheese: list, mazeWidth: int, mazeHeight: int) -> list:
@@ -128,7 +130,7 @@ def targetNextCheese(playerPos: tuple, mazeMap: dict, piecesOfCheese: list, maze
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
     globalPath.extend(targetNextCheese(playerLocation, mazeMap,
-                                       piecesOfCheese, mazeHeight, mazeWidth)[1])
+                                       piecesOfCheese, mazeWidth, mazeHeight)[1])
     return
 
 
@@ -136,6 +138,6 @@ def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playe
     # if path is empty it means we can look for another cheese and we go on
     if globalPath == []:
         globalPath.extend(targetNextCheese(playerLocation, mazeMap,
-                                           piecesOfCheese, mazeHeight, mazeWidth))
+                                           piecesOfCheese, mazeWidth, mazeHeight)[1])
     goal = globalPath.pop()
     return getDirection(goal, playerLocation)

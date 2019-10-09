@@ -1,123 +1,41 @@
 ###############################
 # Please put your imports here
 import heapq
+import AIs.backtracking as bt
 ###############################
 # Please put your global variables here
 
-MOVE_DOWN = 'D'
-MOVE_LEFT = 'L'
-MOVE_RIGHT = 'R'
-MOVE_UP = 'U'
-directions = {(0, 1): MOVE_UP, (0, -1): MOVE_DOWN,
-              (1, 0): MOVE_RIGHT, (-1, 0): MOVE_LEFT}
-cheesesPath = []
-
-
-def getDirection(direction, position):
-    (fstA, sndA) = direction
-    (fstB, sndB) = position
-    fst = fstA - fstB
-    snd = sndA-sndB
-    return directions[(fst, snd)]
-
-
-def greedIsFeed(beginLocation, mazeMap, piecesOfCheese):
+def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight, availableCheeses = []):
+    if availableCheeses == []:
+        availableCheeses = [*range(len(piecesOfCheese))]
+        playerPos = -1
+    else:
+        playerPos = piecesOfCheese.index(beginLocation)
     weight = 0
     path = []
-    orderCheese = []
-    cheesesRemaining = piecesOfCheese.copy()
-    playerPos = beginLocation
+    order = []
+    cheesesRemaining = availableCheeses.copy()
     while cheesesRemaining != []:
-        (w, p) = targetNextCheese(playerPos, mazeMap, cheesesRemaining)
-        orderCheese.append(piecesOfCheese.index(p[0]))
-        cheesesRemaining.remove(p[0])
+        index = 1
+        bestIndex = 0
+        
+        bestWeight = bt.cheesesPath[playerPos][cheesesRemaining[0]][0]
+        while index < len(cheesesRemaining):
+            if bt.cheesesPath[playerPos][cheesesRemaining[index]][0] < bestWeight:
+                bestIndex = index
+                bestWeight = bt.cheesesPath[playerPos][cheesesRemaining[index]][0]
+            index += 1
+        order.append(cheesesRemaining[bestIndex])
+        w, p = bt.cheesesPath[playerPos][cheesesRemaining[bestIndex]]
+        playerPos = cheesesRemaining.pop(bestIndex)
         weight += w
-        playerPos = p[0]
         path = p + path
-    return (weight, path, orderCheese)
-
-
-def targetNextCheese(playerPos, mazeMap, piecesOfCheese):
-    heap = []
-    fatherDic = {playerPos: (-1, -1)}
-    heapq.heappush(heap, (0, playerPos))
-    cheeseFound = False
-    while heap != [] and not cheeseFound:
-        (weight, vertice) = heapq.heappop(heap)
-        for elmt in mazeMap[vertice].keys():
-            if elmt not in fatherDic.keys():
-                fatherDic.update({elmt: vertice})
-                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
-            if elmt in piecesOfCheese:
-                cheeseFound = True
-                destination = elmt
-                break
-    iterator = destination
-    path = []
-    path.append(destination)
-    while fatherDic[iterator] != playerPos:
-        path.append(fatherDic[iterator])
-        weight += mazeMap[fatherDic[iterator]][iterator]
-        iterator = path[-1]
-    weight += mazeMap[playerPos][iterator]
-    return (weight, path)
-
-# must be called once and not twice or more as it adds things to cheesePath but does not remove things in it
-# procedure having side effect on cheesePath
-
-
-def targetPoint(playerPos, mazeMap, target):
-    heap = []
-    path = []
-    fatherDic = {playerPos: (-1, -1)}
-    heapq.heappush(heap, (0, playerPos))
-    cheeseFound = False
-    while heap != [] and not cheeseFound:
-        (weight, vertice) = heapq.heappop(heap)
-        for elmt in mazeMap[vertice].keys():
-            if elmt not in fatherDic.keys():
-                fatherDic.update({elmt: vertice})
-                heapq.heappush(heap, (weight + mazeMap[vertice][elmt], elmt))
-            if elmt == target:
-                cheeseFound = True
-                destination = elmt
-                break
-    iterator = destination
-    path.append(destination)
-    weight = 0
-    while fatherDic[iterator] != playerPos:
-        path.append(fatherDic[iterator])
-        weight += mazeMap[iterator][path[-1]]
-        iterator = path[-1]
-    weight += mazeMap[iterator][playerPos]
-    return (weight, path)
-
-
-def computeCheesePath(mazeMap, piecesOfCheese):
-    cheesesPath.extend([[] for i in range(len(piecesOfCheese))])
-    for i in range(len(piecesOfCheese)):
-        for j in range(i, len(piecesOfCheese)):
-            if i != j:
-                cheesesPath[i].append(targetPoint(
-                    piecesOfCheese[i], mazeMap, piecesOfCheese[j]))
-                w, p = cheesesPath[i][-1]
-                p = p.copy()
-                p.pop(0)
-                p.append(piecesOfCheese[i])
-                p.reverse()
-                cheesesPath[j].append((w, p))
-            else:
-                cheesesPath[i].append((0, []))
-
-def getPath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese):
-    p = targetPoint(
-        beginLocation, mazeMap, piecesOfCheese[cheesesPerm[0]])[1]
-    for i in range(len(cheesesPerm)-1):
-        p = cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][1]+p
-    return p
+    
+    return (weight, path, order)
 
 def threeOpt(mazeMap, piecesOfCheese, playerLocation):
-    weight, p, orderCheese = greedIsFeed(playerLocation, mazeMap, piecesOfCheese)
+    weight, p, orderCheese = greedIsFeed(playerLocation, mazeMap, piecesOfCheese,21,15)
+    print(weight)
     bestDeltaW = 0
     bestOrder = orderCheese.copy()
     for i in range(1,len(orderCheese)):
@@ -127,21 +45,22 @@ def threeOpt(mazeMap, piecesOfCheese, playerLocation):
                 if bestDeltaW > deltaW:
                     bestOrder = o
                     bestDeltaW = deltaW
-    return (weight + bestDeltaW,getPath(bestOrder,playerLocation,mazeMap,piecesOfCheese), bestOrder)
+                    print(bestDeltaW)
+    return (weight + bestDeltaW,bt.getPath(bestOrder,playerLocation,mazeMap,piecesOfCheese), bestOrder)
 
 
 def swapIfBetter(orderCheese, i, j, k):
-    d0 = cheesesPath[i-1][i][0] + \
-        cheesesPath[j-1][j][0] + cheesesPath[k-1][k][0]
-    d1 = cheesesPath[i-1][j-1][0] + \
-        cheesesPath[i][j][0] + cheesesPath[k - 1][k][0]
+    d0 = bt.cheesesPath[i-1][i][0] + \
+        bt.cheesesPath[j-1][j][0] + bt.cheesesPath[k-1][k][0]
+    d1 = bt.cheesesPath[i-1][j-1][0] + \
+        bt.cheesesPath[i][j][0] + bt.cheesesPath[k - 1][k][0]
     # d1 example we swapped i-1 -> i and j-1 -> j to get i-1 -> j-1 and i-> j
-    d4 = cheesesPath[i - 1][k - 1][0] + \
-        cheesesPath[j][j-1][0] + cheesesPath[i][k][0]
-    d2 = cheesesPath[i-1][i][0] + \
-        cheesesPath[j-1][k-1][0] + cheesesPath[j][k][0]
-    d3 = cheesesPath[i - 1][j][0] + \
-        cheesesPath[i][k - 1][0] + cheesesPath[k][j - 1][0]
+    d4 = bt.cheesesPath[i - 1][k - 1][0] + \
+        bt.cheesesPath[j][j-1][0] + bt.cheesesPath[i][k][0]
+    d2 = bt.cheesesPath[i-1][i][0] + \
+        bt.cheesesPath[j-1][k-1][0] + bt.cheesesPath[j][k][0]
+    d3 = bt.cheesesPath[i - 1][j][0] + \
+        bt.cheesesPath[i][k - 1][0] + bt.cheesesPath[k][j - 1][0]
     if d0 > d1:
         pivot = orderCheese[i:j]
         pivot.reverse()
@@ -161,19 +80,20 @@ def swapIfBetter(orderCheese, i, j, k):
     else:
         return (0, orderCheese)
 path =[]
-
+w =0 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
-    computeCheesePath(mazeMap,piecesOfCheese)
-    path.extend(threeOpt(mazeMap, piecesOfCheese, playerLocation)[1])
-    print(path)
-    print("\n")
-    print(piecesOfCheese)
-    print("fin preprocessing")
+    bt.computeCheesePath(mazeMap,piecesOfCheese)
+    global w 
+    (w,p,d) = threeOpt(mazeMap, piecesOfCheese, playerLocation)
+    path.extend(p)
+    print("opt "+ str(w))
     return
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
-    return getDirection(path.pop(),playerLocation)
+    print("opt "+ str(w)) 
+    return 
+    return bt.getDirection(path.pop(),playerLocation)
 
 cheese = [(10, 7), (3, 12), (17, 2), (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4), (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
 maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): {(1, 2): 1}, (0, 3): {(0, 4): 1}, (0, 4): {(0, 3): 1, (1, 4): 1}, (0, 5): {(1, 5): 

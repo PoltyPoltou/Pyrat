@@ -1,7 +1,6 @@
 ###############################
 # Please put your imports here
 import AIs.dijkstra as dj
-import pdb
 #import dijkstra as dj
 ###############################
 # Please put your global variables here
@@ -23,7 +22,6 @@ def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight, a
     while cheesesRemaining != []:
         index = 1
         bestIndex = 0
-        
         bestWeight = cheesesPath[playerPos][cheesesRemaining[0]][0]
         while index < len(cheesesRemaining):
             if cheesesPath[playerPos][cheesesRemaining[index]][0] < bestWeight:
@@ -103,7 +101,6 @@ def getPath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth, maze
     p = cheesesPath[-1][cheesesPerm[0]][1].copy()
     for i in range(len(cheesesPerm)-1):
         p = cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][1] + p
-    print(p)
     return p
 # solutions are just the order of the cheeses taken (in respect to the list piecesOfCheese)
 
@@ -163,7 +160,7 @@ def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLoca
                 cheesesPath[i].append((0, []))
         cheesesPath[-1].append(dj.targetPoint(playerLocation, mazeMap, piecesOfCheese[i], mazeWidth, mazeHeight))
         w, p = cheesesPath[-1][-1]
-        p = p.copy()
+        p = p[:]
         p.pop(0)
         p.append(playerLocation)
         p.reverse()
@@ -172,15 +169,20 @@ def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLoca
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
     computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLocation)
-    order = backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight)
-    print(order)
-    globalPath.extend(order)
+    order = greedIsFeed(playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
+    globalPath.extend(order[1])
+    f = open("greed.csv","a")
+    f.write(str(order[0]) + "\n")
+    f.close()
     return 
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
-    return dj.getDirection(globalPath.pop(), playerLocation)
-cheese = [(10, 7), (3, 12), (17, 2)]#, (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4), (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
+    
+    return dj.getDirection(globalPath.pop(),playerLocation)
+
+
+cheese = [(10, 7), (3, 12), (17, 2), (3, 3), (17, 11), (4, 7), (16, 7), (8, 1), (12, 13), (8, 4), (12, 10), (9, 8), (11, 6), (1, 14), (19, 0), (4, 8), (16, 6), (2, 9), (18, 5), (2, 0), (18, 14), (6, 11), (14, 3), (0, 11), (20, 3), (5, 10), (15, 4), (8, 14), (12, 0), (9, 9), (11, 5), (0, 7), (20, 7), (6, 5), (14, 9), (2, 5), (18, 9), (8, 12), (12, 2), (6, 3), (14, 11)]
 maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): {(1, 2): 1}, (0, 3): {(0, 4): 1}, (0, 4): {(0, 3): 1, (1, 4): 1}, (0, 5): {(1, 5): 
 1, (0, 6): 1}, (0, 6): {(0, 5): 1, (1, 6): 1}, (0, 7): {(1, 7): 1}, (0, 8): {(0, 9): 1, (1, 8): 1}, (0, 9): {(0, 8): 1}, (0, 10): {(0, 11): 1}, (0, 11): {(0, 10): 1, (0, 12): 1}, (0, 12): {(1, 12): 1, (0, 13): 1, (0, 11): 1}, (0, 13): {(0, 12): 1, (0, 14): 1}, (0, 14): {(0, 13): 1, (1, 14): 1}, (1, 0): {(2, 0): 1, (0, 0): 1}, (1, 1): {(1, 2): 1, (0, 1): 9}, (1, 2): {(0, 2): 1, (1, 1): 1, (1, 3): 1, (2, 2): 1}, (1, 3): {(1, 4): 1, (2, 3): 1, (1, 2): 1}, (1, 4): {(1, 5): 1, (1, 3): 1, (0, 4): 1}, (1, 5): {(0, 5): 1, (2, 5): 1, (1, 4): 1}, (1, 6): {(0, 6): 1}, (1, 7): {(2, 7): 1, (0, 7): 1}, (1, 8): {(1, 9): 1, (0, 8): 
 1}, (1, 9): {(1, 8): 1, (1, 10): 6}, (1, 10): {(1, 9): 6, (2, 10): 1}, (1, 11): {(2, 11): 1}, (1, 12): {(0, 12): 1, (2, 12): 1}, (1, 13): {(2, 13): 1, (1, 14): 1}, (1, 14): {(1, 13): 1, (0, 14): 1}, (2, 0): {(1, 0): 1}, (2, 1): {(3, 1): 1}, (2, 2): {(1, 2): 1}, (2, 3): {(1, 3): 1}, (2, 4): {(2, 5): 8}, (2, 5): 
@@ -200,3 +202,8 @@ maze = {(0, 0): {(0, 1): 1, (1, 0): 1}, (0, 1): {(0, 0): 1, (1, 1): 9}, (0, 2): 
 1}, (18, 6): {(18, 7): 1, (18, 5): 1}, (18, 7): {(19, 7): 1, (17, 7): 1, (18, 6): 1}, (18, 8): {(17, 8): 1}, (18, 9): {(19, 9): 1, (18, 10): 8, (17, 9): 1}, (18, 10): {(18, 9): 8}, (18, 11): {(19, 11): 1}, (18, 12): {(19, 12): 1}, (18, 13): {(17, 13): 1}, (18, 14): {(19, 14): 1}, (19, 0): {(19, 1): 1, (20, 0): 
 1}, (19, 1): {(18, 1): 1, (19, 0): 1}, (19, 2): {(20, 2): 1, (18, 2): 1}, (19, 3): {(18, 3): 1}, (19, 4): {(19, 5): 6, (18, 4): 1}, (19, 5): {(19, 6): 1, (19, 4): 6}, (19, 6): {(19, 5): 1, (20, 6): 1}, (19, 7): {(18, 7): 1, (20, 7): 1}, (19, 8): {(20, 8): 1}, (19, 9): {(20, 9): 1, (18, 9): 1, (19, 10): 1}, (19, 10): {(19, 9): 1, (19, 11): 1, (20, 10): 1}, (19, 11): {(19, 10): 1, (18, 11): 1, (19, 12): 1}, (19, 12): {(20, 12): 1, (19, 13): 1, (19, 11): 1, (18, 12): 1}, (19, 13): {(19, 12): 1, (20, 13): 9}, (19, 14): {(18, 14): 1, (20, 14): 1}, (20, 0): {(20, 1): 1, (19, 0): 1}, (20, 1): {(20, 2): 1, (20, 0): 1}, (20, 
 2): {(19, 2): 1, (20, 1): 1, (20, 3): 1}, (20, 3): {(20, 4): 1, (20, 2): 1}, (20, 4): {(20, 3): 1}, (20, 5): {(20, 6): 1}, (20, 6): {(20, 5): 1, (19, 6): 1}, (20, 7): {(19, 7): 1}, (20, 8): {(20, 9): 1, (19, 8): 1}, (20, 9): {(19, 9): 1, (20, 8): 1}, (20, 10): {(20, 11): 1, (19, 10): 1}, (20, 11): {(20, 10): 1}, (20, 12): {(19, 12): 1}, (20, 13): {(20, 14): 1, (19, 13): 9}, (20, 14): {(20, 13): 1, (19, 14): 1}}
+'''computeCheesePath(maze,cheese,21,15,(20,14))
+file = open("metagraph.py","w")
+file.write(str(cheesesPath))
+file.close()
+print(greedIsFeed((0,0),maze,cheese,21,15)[0])'''

@@ -9,24 +9,34 @@ import heapq
 # upperBound to the constructing solution, we will use a greedy method to get it
 
 
-def upperBound(constructingSolution, mazeMap, playerPos, piecesOfCheese, mazeWidth, mazeHeight):
+def upperBound(constructingSolution : list, piecesOfCheese: list) -> int:
+    '''
+    Compute a upper score for the constructing solution, which is a permutation of the cheeses
+    It is using a greedy approach to find the end of the path
+    The method is returning the upper score
+    '''
     weight = bt.cheesesPath[-1][constructingSolution[0]][0]
     for i in range(len(constructingSolution) - 1):
         weight += bt.cheesesPath[constructingSolution[i]
                                  ][constructingSolution[i + 1]][0]
     finalPosition = piecesOfCheese[constructingSolution[-1]]
     cheeseRemaining = [ x for x  in range(len(piecesOfCheese)) if x not in constructingSolution]
-    w, p = bt.greedIsFeed(finalPosition, mazeMap,
-                          piecesOfCheese, mazeWidth, mazeHeight,cheeseRemaining)
+    w, p = bt.greedIsFeed(finalPosition,
+                          piecesOfCheese,cheeseRemaining)
     return weight + w
 
 
-def branchAndBound(mazeMap, playerPos, piecesOfCheese, mazeWidth, mazeHeight):
+def branchAndBound(playerPos: (int,int), piecesOfCheese : list):
+    '''
+    This method finds the best way to get every cheese via an exhaustive search but searching cleverly
+    playerPos is the position at the beginning of the search
+    pieceOfCheese is the list of the position of every cheese
+    '''
     heap = []
     n = len(piecesOfCheese)
     bestScore, bestPath = bt.greedIsFeed(
-        playerPos, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
-    heapq.heappush(heap, (0, 0, []))
+        playerPos, piecesOfCheese)
+    heapq.heappush(heap, (0, 0, [])) 
     while heap != []:
         currentSolution = heapq.heappop(heap)[2]
         # we get the sons of the current solution with this line :
@@ -38,21 +48,19 @@ def branchAndBound(mazeMap, playerPos, piecesOfCheese, mazeWidth, mazeHeight):
             # we put the rest in the heap with their respected priority
 
             lowerBounds = [bt.lowerBound(
-                sol, mazeMap, playerPos, piecesOfCheese, mazeWidth, mazeHeight) for sol in nextSolutions]
-            retainedSol = [(upperBound(nextSolutions[i], mazeMap, playerPos,
-                                       piecesOfCheese, mazeWidth, mazeHeight), lowerBounds[i], nextSolutions[i]) for i in range(len(nextSolutions)) if lowerBounds[i] < bestScore]
+                sol,piecesOfCheese) for sol in nextSolutions]
+            retainedSol = [(upperBound(nextSolutions[i],piecesOfCheese), lowerBounds[i], nextSolutions[i]) for i in range(len(nextSolutions)) if lowerBounds[i] < bestScore]
             for sol in retainedSol:
-                heapq.heappush(heap, sol)
-        # if nextSolutions is empty or one cheese away to be over it means we are on a leaf then we check the score
+                heapq.heappush(heap, sol) 
+        # if nextSolutions is empty or one cheese away to be over
+        # it means we are on a leaf then we check the score
         else:
             if nextSolutions == []:
                 nextSolutions.append(currentSolution)
-            w = bt.evaluatePath(
-                nextSolutions[0], playerPos, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
+            w = bt.evaluatePath(nextSolutions[0])
             if w < bestScore:
                 bestScore = w
-                bestPath = bt.getPath(
-                nextSolutions[0], playerPos, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
+                bestPath = bt.getPath(nextSolutions[0])
                 # when we found a better solution we do a cleanup of the heap:
                 # we check again the lower bound and pop the ones not useful anymore
                 i = 0
@@ -69,9 +77,8 @@ path = []
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
     bt.computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLocation)
-    path.extend(branchAndBound(mazeMap, playerLocation,
-                               piecesOfCheese, mazeWidth, mazeHeight)[1])
-    print(path) #the path to the first cheese is missing
+    path.extend(branchAndBound(playerLocation,
+                               piecesOfCheese)[1])
     return
 
 

@@ -46,7 +46,7 @@ def threeOpt(mazeMap, piecesOfCheese, playerLocation):
                     bestOrder = o
                     bestDeltaW = deltaW
                     print(bestDeltaW)
-    return (weight + bestDeltaW,bt.getPath(bestOrder,playerLocation,mazeMap,piecesOfCheese), bestOrder)
+    return (weight + bestDeltaW,bt.getPath(bestOrder), bestOrder)
 
 
 def swapIfBetter(orderCheese, i, j, k):

@@ -36,12 +36,14 @@ get a list of list, matrix, and a couple and considers them as coordinates
     return matrix[a][b]
 
 
-def targetPoint(playerPos, mazeMap, target, mazeWidth, mazeHeight):
+def targetPoint(playerPos: (int, int), mazeMap: dict, target: (int, int), mazeWidth: int, mazeHeight: int) -> (int, list):
     '''
     see targetNextCheese for details, here we just go to target instead of a cheese
+    Using dijkstra algorithm
     '''
+    # setup of dijkstra algorithm
     heap = []
-    fatherDic = {playerPos: (-1, -1)}
+    fatherDict = {playerPos: (-1, -1)}
     heapq.heappush(heap, (0, playerPos))
     length = [[float('inf') for i in range(mazeHeight)]
               for i in range(mazeWidth)]
@@ -63,21 +65,21 @@ def targetPoint(playerPos, mazeMap, target, mazeWidth, mazeHeight):
                     length[x][y] = weight + mazeMap[vertice][elmt]
                     heapq.heappush(heap, (length[x][y], elmt))
                 # adds or update the father's elmt, which is vertice
-                fatherDic.pop(elmt, True)
-                fatherDic.update({elmt: vertice})
+                fatherDict.pop(elmt, True)
+                fatherDict.update({elmt: vertice})
     # this part is to transform the fatherDict into a path
     iterator = target
     path = []
     weight = 0
     path.append(target)
-    while fatherDic[iterator] != playerPos:
-        path.append(fatherDic[iterator])
-        weight += mazeMap[iterator][fatherDic[iterator]]
+    while fatherDict[iterator] != playerPos:
+        path.append(fatherDict[iterator])
+        weight += mazeMap[iterator][fatherDict[iterator]]
         iterator = path[-1]
     return (weight + mazeMap[iterator][playerPos], path)
 
 
-def targetNextCheese(playerPos: tuple, mazeMap: dict, piecesOfCheese: list, mazeWidth: int, mazeHeight: int) -> list:
+def targetNextCheese(playerPos: (int, int), mazeMap: dict, piecesOfCheese: list, mazeWidth: int, mazeHeight: int) -> (int, list):
     '''
     mazeMap is the dict discribing the map
     piecesOfCheese the list of the coordinates of the remaining cheeses
@@ -109,14 +111,14 @@ def targetNextCheese(playerPos: tuple, mazeMap: dict, piecesOfCheese: list, maze
                 # adds or update the father's elmt, which is vertice
                 fatherDic.pop(elmt, True)
                 fatherDic.update({elmt: vertice})
-    # this part is to transform the fatherDict into a path
     # we also check which cheese is the closest one and is stored in destination
     destination = piecesOfCheese[0]
     distance = length[destination[0]][destination[1]]
-    for (x, y) in piecesOfCheese:
-        if distance > length[x][y]:
-            distance = length[x][y]
-            destination = (x, y)
+    for pos in piecesOfCheese:
+        if distance > coupleToIndex(length, pos):
+            distance = coupleToIndex(length, pos)
+            destination = pos
+    # this part is to transform the fatherDict into a path
     iterator = destination
     path = []
     path.append(destination)

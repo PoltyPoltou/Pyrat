@@ -10,13 +10,13 @@ cheesesPath = []
 # return the weight of the greediest path
 
 
-def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight, availableCheeses = []):
+def greedIsFeed(beginLocation, piecesOfCheese, availableCheeses = []) -> (int,list):
     if availableCheeses == []:
         availableCheeses = [*range(len(piecesOfCheese))]
         playerPos = -1
     else:
         playerPos = piecesOfCheese.index(beginLocation)
-    weight = 0
+    weight = 0 
     path = []
     cheesesRemaining = availableCheeses.copy()
     while cheesesRemaining != []:
@@ -39,7 +39,7 @@ def greedIsFeed(beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight, a
 # for now it is estimated one move for each cheese not picked up plus the actual weight
 
 
-def lowerBound(constructingSolution, mazeMap, playerPos, piecesOfCheese,mazeWidth, mazeHeight):
+def lowerBound(constructingSolution, piecesOfCheese):
     weight = cheesesPath[-1][constructingSolution[0]][0]
     for i in range(len(constructingSolution) - 1):
         weight += cheesesPath[constructingSolution[i]][constructingSolution[i + 1]][0]
@@ -90,14 +90,14 @@ def nextPerm(lst, size):
         result = newLst[:k+1] + temp
     return result
 
-def evaluatePath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
+def evaluatePath(cheesesPerm):
     weight, p = cheesesPath[-1][cheesesPerm[0]]
     for i in range(len(cheesesPerm)-1):
         weight += cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][0]
     return weight
 
 
-def getPath(cheesesPerm, beginLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight):
+def getPath(cheesesPerm):
     p = cheesesPath[-1][cheesesPerm[0]][1].copy()
     for i in range(len(cheesesPerm)-1):
         p = cheesesPath[cheesesPerm[i]][cheesesPerm[i+1]][1] + p
@@ -110,12 +110,12 @@ def lastPerm(lst, size):
     return [] == [x for x in range(lst[-1]+1,size) if x not in lst]
 
 
-def backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight):
+def backtracking(piecesOfCheese, playerLocation):
     n = len(piecesOfCheese)
-    bestScore,path = greedIsFeed(playerLocation,mazeMap,piecesOfCheese, mazeWidth, mazeHeight)
+    bestScore,path = greedIsFeed(playerLocation,piecesOfCheese)
     lst = [0]
     while lst != [x for x in range(n - 1, -1, -1)]:
-        if lowerBound(lst, mazeMap, playerLocation, piecesOfCheese,mazeWidth, mazeHeight) > bestScore:
+        if lowerBound(lst, piecesOfCheese) > bestScore:
             while lastPerm(lst, n):
                 lst.pop()
             if lst == []:
@@ -123,17 +123,17 @@ def backtracking(mazeMap, piecesOfCheese, playerLocation, mazeWidth, mazeHeight)
             else:
                 lst = nextPerm(lst, n)
                 if len(lst) == n:
-                    score = evaluatePath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
+                    score = evaluatePath(lst)
                     if score < bestScore:
                         bestScore = score
-                        path = getPath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
+                        path = getPath(lst)
         elif len(lst) != n:
             lst.append([x for x in range(n) if x not in lst][0])
         else:
-            score = evaluatePath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
+            score = evaluatePath(lst)
             if score < bestScore:
                 bestScore = score
-                path = getPath(lst,playerLocation,mazeMap,piecesOfCheese,mazeWidth, mazeHeight)
+                path = getPath(lst)
             while lastPerm(lst, n):
                 lst.pop()
             if lst == []:
@@ -169,11 +169,8 @@ def computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLoca
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
     computeCheesePath(mazeMap, piecesOfCheese, mazeWidth, mazeHeight, playerLocation)
-    order = greedIsFeed(playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
+    order = greedIsFeed(playerLocation, piecesOfCheese)
     globalPath.extend(order[1])
-    f = open("greed.csv","a")
-    f.write(str(order[0]) + "\n")
-    f.close()
     return 
 
 

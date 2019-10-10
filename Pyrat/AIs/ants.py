@@ -118,11 +118,42 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     global index
+    global path
+    l1 = dj.targetNextCheese(
+        opponentLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
+    l2 = dj.targetPoint(playerLocation, mazeMap,
+                        l1[1][0], mazeWidth, mazeHeight)
+    if l1[0] > l2[0]:
+        path = []
+        path.extend(l2[1])
+        index = order.index(originalCheese.index(path[0]))
     if path == []:
         lastIndex = index
         index += 1
-        while originalCheese[order[index]] not in piecesOfCheese:
-            index += 1
-        path.extend(bt.cheesesPath[order[lastIndex]][order[index]][1])
-
+        if index < len(order) and originalCheese[order[index]] not in piecesOfCheese:
+            i = 1
+            bestIndex = 0
+            cheesesRemaining = [x for x in range(
+                len(originalCheese)) if originalCheese[x] in piecesOfCheese]
+            bestWeight = bt.cheesesPath[order[lastIndex]
+                                        ][cheesesRemaining[0]][0]
+            while i < len(cheesesRemaining):
+                if bt.cheesesPath[order[lastIndex]][cheesesRemaining[i]][0] < bestWeight:
+                    bestIndex = i
+                    bestWeight = bt.cheesesPath[order[lastIndex]
+                                                ][cheesesRemaining[i]][0]
+                i += 1
+            p = bt.cheesesPath[order[lastIndex]
+                               ][cheesesRemaining[bestIndex]][1]
+            a = order[:]
+            a.sort()
+            print(a)
+            index = order.index(cheesesRemaining[bestIndex])
+            path.extend(p)
+        elif index >= len(order):
+            path.extend(bt.greedIsFeed(playerLocation,
+                                       originalCheese, [originalCheese.index(x) for x in piecesOfCheese if x in originalCheese])[1])
+        else:
+            path.extend(bt.cheesesPath[order[lastIndex]
+                                       ][order[index]][1])
     return dj.getDirection(path.pop(), playerLocation)

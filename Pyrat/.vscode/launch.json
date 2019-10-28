@@ -10,18 +10,49 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-        }
+        },
         {
             "name": "Python : selected AI",
             "type": "python",
             "request": "launch",
-            "program": "C:\\Users\\poltg\\Documents\\imt code\\Pyrat\\pyrat.py",
+            "program": "C:\\Users\\poltg\\Documents\\imtcode\\Pyrat\\Pyrat\\pyrat.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--rat",
+                "${file}",
+                "-x",
+                "31",
+                "-y",
+                "29",
+                "-d",
+                "0.7",
+                "-md",
+                "0.1",
+                "--preparation_time",
+                "3000"
+            ]
+        },
+        {
+            "name": "Python : selected AI and dijkstra",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\poltg\\Documents\\imtcode\\Pyrat\\Pyrat\\pyrat.py",
             "console": "integratedTerminal",
             "args": [
                 "--rat",
                 "${file}",
                 "--python",
-                "C:\\Users\\poltg\\Documents\\imt code\\Pyrat\\AIs\\dijkstra.py"
+                "AIs\\dijkstra.py",
+                "-x",
+                "11",
+                "-y",
+                "11",
+                "-d",
+                "0.7",
+                "-md",
+                "0.1",
+                "--preparation_time",
+                "3000"
             ]
         }
     ]

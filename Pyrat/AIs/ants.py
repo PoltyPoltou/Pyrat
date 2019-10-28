@@ -5,14 +5,14 @@ import AIs.dijkstra as dj
 import time
 
 
-def antColonyHeuristic(numberOfAnts, metaGraph):
+def antColonyHeuristic(numberOfAnts, metaGraph, maxTime):
     antColony = [Ant(3, 1, 0.9) for x in range(numberOfAnts)]
     pheromonesTable = [[0]*(len(metaGraph)-1) for x in range(len(metaGraph)-1)]
     decayRate = 0.1
     begin = time.time()
     best = float('inf')
     bestPath = []
-    while time.time() - begin < 1:
+    while time.time() - begin < maxTime:
         antsWork(antColony, pheromonesTable, metaGraph)
         antColony.sort(key=lambda ant: ant.lastScore)
         if best > antColony[0].lastScore:
@@ -111,7 +111,7 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
     bt.computeCheesePath(mazeMap, piecesOfCheese,
                          mazeWidth, mazeHeight, playerLocation)
     global order
-    order = antColonyHeuristic(20, bt.cheesesPath)[1]
+    order = antColonyHeuristic(20, bt.cheesesPath, 1)[1]
     path.extend(bt.cheesesPath[-1][order[index]][1])
     return
 
@@ -119,41 +119,27 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     global index
     global path
-    l1 = dj.targetNextCheese(
-        opponentLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
-    l2 = dj.targetPoint(playerLocation, mazeMap,
-                        l1[1][0], mazeWidth, mazeHeight)
-    if l1[0] > l2[0]:
-        path = []
-        path.extend(l2[1])
-        index = order.index(originalCheese.index(path[0]))
+    global order
     if path == []:
         lastIndex = index
         index += 1
-        if index < len(order) and originalCheese[order[index]] not in piecesOfCheese:
-            i = 1
-            bestIndex = 0
-            cheesesRemaining = [x for x in range(
-                len(originalCheese)) if originalCheese[x] in piecesOfCheese]
-            bestWeight = bt.cheesesPath[order[lastIndex]
-                                        ][cheesesRemaining[0]][0]
-            while i < len(cheesesRemaining):
-                if bt.cheesesPath[order[lastIndex]][cheesesRemaining[i]][0] < bestWeight:
-                    bestIndex = i
-                    bestWeight = bt.cheesesPath[order[lastIndex]
-                                                ][cheesesRemaining[i]][0]
-                i += 1
-            p = bt.cheesesPath[order[lastIndex]
-                               ][cheesesRemaining[bestIndex]][1]
-            a = order[:]
-            a.sort()
-            print(a)
-            index = order.index(cheesesRemaining[bestIndex])
-            path.extend(p)
-        elif index >= len(order):
-            path.extend(bt.greedIsFeed(playerLocation,
-                                       originalCheese, [originalCheese.index(x) for x in piecesOfCheese if x in originalCheese])[1])
+        while index < len(order) and originalCheese[order[index]] not in piecesOfCheese:
+            index += 1
+        if index == len(order):
+            p = dj.targetNextCheese(
+                playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)[1]
         else:
-            path.extend(bt.cheesesPath[order[lastIndex]
-                                       ][order[index]][1])
+            p = bt.cheesesPath[order[lastIndex]][order[index]][1]
+        path.extend(p)
+    if not dj.isNextCheeseStillHere(path, piecesOfCheese):
+        lastIndex = index
+        index += 1
+        while index < len(order) and originalCheese[order[index]] not in piecesOfCheese:
+            index += 1
+        if index == len(order):
+            path = dj.targetNextCheese(
+                playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)[1]
+        else:
+            path = dj.targetPoint(
+                playerLocation, mazeMap, originalCheese[order[index]], mazeWidth, mazeHeight)
     return dj.getDirection(path.pop(), playerLocation)

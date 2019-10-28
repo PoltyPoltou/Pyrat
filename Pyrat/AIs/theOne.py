@@ -8,12 +8,19 @@ def isNextCheeseStillHere(path: list, remainingCheeses: list) -> bool:
     return path[0] in remainingCheeses
 
 
-def isTrapped(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese) -> bool:
+def isTrapped(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese) -> (bool, list):
     l1 = dj.targetNextCheese(
         playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
     l2 = dj.targetPoint(opponentLocation, mazeMap,
                         l1[1][0], mazeWidth, mazeHeight)
-    return l1[0] > l2[0]
+    if l1[0] > l2[0]:
+        if len(piecesOfCheese) < 2:
+            return False, []
+        cheeseAvailable = [
+            cheese for cheese in piecesOfCheese if cheese != l1[1][0]]
+        ourPath = dj.targetNextCheese(
+            playerLocation, mazeMap, cheeseAvailable, mazeWidth, mazeHeight)
+    return l1[0] > l2[0], ourPath[1]
 
 
 def tryIntercept(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese) -> (bool, list):
@@ -37,6 +44,26 @@ def trySecondIntercept(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentL
     return ourPath[0] < firstCheese[0] + secondCheese[0], ourPath[1]
 
 
+def tryBestIntercept(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, heatMap) -> (bool, list):
+    if len(piecesOfCheese) < 2:
+        return False, []
+    firstCheese = dj.targetNextCheese(
+        opponentLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)
+    cheeseAvailable = [
+        cheese for cheese in piecesOfCheese if cheese != firstCheese[1][0]]
+    ourPath = dj.targetNextCheese(
+        playerLocation, mazeMap, cheeseAvailable, mazeWidth, mazeHeight)
+    theirPath = dj.targetNextCheese(
+        opponentLocation, mazeMap, cheeseAvailable, mazeWidth, mazeHeight)
+    intercept = trySecondIntercept(
+        mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese)
+    heatMapTab = genHeatMap(heatMap, piecesOfCheese)
+    if 1/dj.coupleToIndex(heatMapTab, ourPath[1][0])*(ourPath[0] < theirPath[0]) > 1/dj.coupleToIndex(heatMapTab, intercept[1][0])*(intercept[0]):
+        return ourPath[0] < theirPath[0], ourPath[1]
+    else:
+        return intercept
+
+
 def getCheeseNumber(cheesePosition: (int, int)) -> int:
     return originalCheese.index(cheesePosition)
 
@@ -57,33 +84,42 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
                                (mazeWidth // 2, mazeHeight // 2), mazeWidth, mazeHeight)[1])
 
 
-WAIT_TURN = 40
-turns = 0
+attitude: str = "Ants"
+opponentReacting = {"intercept2":False,"interceptOne": False, "defence":    False}
+excpectedOpponentPosition = []
 
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     global path
+    global attitude
     if path == []:
         path.extend(dj.targetNextCheese(playerLocation, mazeMap,
                                         piecesOfCheese, mazeWidth, mazeHeight)[1])
+        attitude = "greedy"
     interception = tryIntercept(
         mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese)
-    if interception[0]:
+    if interception[0] and not opponentReacting["defence"]:
         path = interception[1]
-        print("intercept")
+        attitude = "interceptOne"
     else:
-        secondIntercept = trySecondIntercept(
-            mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese)
+        secondIntercept = tryBestIntercept(
+            mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, heatMap)
         if secondIntercept[0]:
-            print("second intercept")
+            attitude = "intercept2"
             path = secondIntercept[1]
     if not isNextCheeseStillHere(path, piecesOfCheese):
         path = dj.targetNextCheese(
             playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)[1]
-    if isTrapped(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese):
-        intercept = trySecondIntercept(
-            mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese)
-        if intercept[0]:
-            print("IT'S A TRAP")
-            path = intercept[1]
+        attitude = "greedy"
+    test = isTrapped(mazeMap, mazeWidth, mazeHeight,
+                     playerLocation, opponentLocation, piecesOfCheese)
+    if test:
+        print("IT'S A TRAP")
+        attitude = "defence"
+        path = test[1]
+    if excpectedOpponentPosition != []:
+        if excpectedOpponentPosition.pop() != opponentLocation:
+            print("Opponent reacting to" + attitude)
+            opponentReacting[attitude] = True
+
     return dj.getDirection(path.pop(), playerLocation)

@@ -145,9 +145,6 @@ def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playe
                 i += 1
             p = bt.cheesesPath[order[lastIndex]
                                ][cheesesRemaining[bestIndex]][1]
-            a = order[:]
-            a.sort()
-            print(a)
             index = order.index(cheesesRemaining[bestIndex])
             path.extend(p)
         elif index >= len(order):

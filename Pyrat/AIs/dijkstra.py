@@ -36,11 +36,13 @@ get a list of list, matrix, and a couple and considers them as coordinates
     return matrix[a][b]
 
 
-def targetPoint(playerPos: (int, int), mazeMap: dict, target: (int, int), mazeWidth: int, mazeHeight: int) -> (int, list):
+def targetPoint(playerPos: (int, int), mazeMap: dict, target: (int, int), mazeWidth: int, mazeHeight: int, pieceOfCheese: list = [], cheeseValuation: int = 0) -> (int, list):
     '''
     see targetNextCheese for details, here we just go to target instead of a cheese
     Using dijkstra algorithm
     '''
+    if playerPos == target:
+        return (0, [])
     # setup of dijkstra algorithm
     heap = []
     fatherDict = {playerPos: (-1, -1)}
@@ -54,15 +56,18 @@ def targetPoint(playerPos: (int, int), mazeMap: dict, target: (int, int), mazeWi
         (weight, vertice) = heapq.heappop(heap)
         for elmt in mazeMap[vertice].keys():
             x, y = elmt
-            if coupleToIndex(length, elmt) > weight + mazeMap[vertice][elmt]:
+            cheeseFactor = (elmt in pieceOfCheese) * cheeseValuation
+            if coupleToIndex(length, elmt) > weight - cheeseFactor + mazeMap[vertice][elmt]:
                 # affects the new weight if it is better than the previous one
                 if elmt in heap:
                     heap.pop(heap.index((coupleToIndex(length, elmt), elmt)))
                     heapq.heappush(
-                        heap, (weight + mazeMap[vertice][elmt], elmt))
-                    length[x][y] = weight + mazeMap[vertice][elmt]
+                        heap, (weight - cheeseFactor + mazeMap[vertice][elmt], elmt))
+                    length[x][y] = weight - cheeseFactor + \
+                        mazeMap[vertice][elmt]
                 else:
-                    length[x][y] = weight + mazeMap[vertice][elmt]
+                    length[x][y] = weight - cheeseFactor + \
+                        mazeMap[vertice][elmt]
                     heapq.heappush(heap, (length[x][y], elmt))
                 # adds or update the father's elmt, which is vertice
                 fatherDict.pop(elmt, True)
@@ -89,7 +94,7 @@ def targetNextCheese(playerPos: (int, int), mazeMap: dict, piecesOfCheese: list,
     '''
     # setup of dijkstra algorithm
     heap = []
-    fatherDic = {playerPos: (-1, -1)}
+    fatherDict = {}
     heapq.heappush(heap, (0, playerPos))
     length = [[float('inf') for i in range(mazeHeight)]
               for i in range(mazeWidth)]
@@ -109,8 +114,8 @@ def targetNextCheese(playerPos: (int, int), mazeMap: dict, piecesOfCheese: list,
                     length[x][y] = weight + mazeMap[vertice][elmt]
                     heapq.heappush(heap, (length[x][y], elmt))
                 # adds or update the father's elmt, which is vertice
-                fatherDic.pop(elmt, True)
-                fatherDic.update({elmt: vertice})
+                fatherDict.pop(elmt, True)
+                fatherDict.update({elmt: vertice})
     # we also check which cheese is the closest one and is stored in destination
     destination = piecesOfCheese[0]
     distance = length[destination[0]][destination[1]]
@@ -123,11 +128,15 @@ def targetNextCheese(playerPos: (int, int), mazeMap: dict, piecesOfCheese: list,
     path = []
     path.append(destination)
     weight = 0
-    while fatherDic[iterator] != playerPos:
-        weight += mazeMap[iterator][fatherDic[iterator]]
-        path.append(fatherDic[iterator])
+    while fatherDict[iterator] != playerPos:
+        weight += mazeMap[iterator][fatherDict[iterator]]
+        path.append(fatherDict[iterator])
         iterator = path[-1]
     return weight, path
+
+
+def isNextCheeseStillHere(path: list, remainingCheeses: list) -> bool:
+    return path[0] in remainingCheeses
 
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
@@ -138,8 +147,14 @@ def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocati
 
 def turn(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, playerScore, opponentScore, piecesOfCheese, timeAllowed):
     # if path is empty it means we can look for another cheese and we go on
+    global globalPath
     if globalPath == []:
         globalPath.extend(targetNextCheese(playerLocation, mazeMap,
                                            piecesOfCheese, mazeWidth, mazeHeight)[1])
+
+    if not isNextCheeseStillHere(globalPath, piecesOfCheese):
+        globalPath = targetNextCheese(
+            playerLocation, mazeMap, piecesOfCheese, mazeWidth, mazeHeight)[1]
+
     goal = globalPath.pop()
     return getDirection(goal, playerLocation)

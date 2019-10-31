@@ -73,7 +73,7 @@ def targetNextCheese(playerPos: (int, int), mazeMap: dict, piecesOfCheese: list,
     '''
     if playerPos in piecesOfCheese:
         return (0, [])
-    # setup of dijkstra algorithm
+    # dijkstra algorithm
     length, fatherDict = dijkstraMethod(
         playerPos, mazeMap, mazeWidth, mazeHeight)
     # we also check which cheese is the closest one and is stored in destination
@@ -92,11 +92,7 @@ def targetNextCheese(playerPos: (int, int), mazeMap: dict, piecesOfCheese: list,
         weight += mazeMap[iterator][fatherDict[iterator]]
         path.append(fatherDict[iterator])
         iterator = path[-1]
-        try:
-            fatherDict[iterator]
-        except:
-            print(str(iterator) + " loc: " + str(playerPos) +
-                  " destination: " + str(destination), file=sys.stderr)
+        fatherDict[iterator]
     return weight, path
 
 
@@ -105,8 +101,7 @@ def isNextCheeseStillHere(path: list, remainingCheeses: list) -> bool:
 
 
 def preprocessing(mazeMap, mazeWidth, mazeHeight, playerLocation, opponentLocation, piecesOfCheese, timeAllowed):
-    one.genHeatMap(mazeMap, mazeWidth, mazeHeight, piecesOfCheese)
-    point = one.targetByHeat(one.heatMap, piecesOfCheese)
+    point = (mazeWidth//2, mazeHeight//2)
 
     globalPath.extend(targetPoint(playerLocation, mazeMap,
                                   point, mazeWidth, mazeHeight)[1])
